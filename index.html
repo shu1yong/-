@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title></title>
+		<link rel="stylesheet" type="text/css" href="css/style.css"/>
+	</head>
+	<body>
+		<div id="menu">
+			<div class="btn" id="paint" style="background-image: url(img/paint.png);"></div>
+			<div class="btn" id="rect" style="background-image: url(img/rect.png);"></div>
+			<div class="btn" id="circle"  style="background-image: url(img/circle.png);"></div>
+			<div class="btn" id="eraser" >橡皮擦</div>
+			<div class="btn2 download">下载图片</div>
+			<div class="btn2 download2" style="display: none;">
+				<a href="" download="download">下载</a>
+			</div>
+			<div class="btn1 active line xi "></div>
+			<div class="btn1 line normal"></div>
+			<div class="btn1 line cu"></div>
+			<div class="btn"><input type="color" name="color" id="color" value="#000000" /></div>
+			
+		</div>
+		<canvas id="canvas" width="" height=""></canvas>
+		<script type="text/javascript">
+			var canvas = document.querySelector("#canvas");
+			var ctx = canvas.getContext("2d");
+			var allBtn = document.querySelectorAll(".btn");
+			var circleBtn = document.querySelector("#circle")
+			var rextBtn = document.querySelector("#rect");
+			var huaban = {
+				type:"none",
+				isDraw:false,
+				beginX:0,
+				beginY:0,
+				lineWidth:6,
+				color:"#000",
+				imageData:null,
+				paintFn:function(e){
+					var x = e.pageX - canvas.offsetLeft;
+					var y = e.pageY - canvas.offsetTop;
+					ctx.lineTo(x,y);
+					ctx.lineWidth = huaban.lineWidth;
+					ctx.strokeStyle = huaban.color;
+					ctx.lineCap = "round";
+					ctx.lineJoin = "round";
+					ctx.stroke();
+				},
+				eraserFn:function(e){
+					var x = e.pageX - canvas.offsetLeft;
+					var y = e.pageY - canvas.offsetTop;
+					ctx.lineTo(x,y);
+					ctx.lineWidth = huaban.lineWidth;
+					ctx.strokeStyle = "#fff";
+					ctx.lineCap = "round";
+					ctx.lineJoin = "round";
+					ctx.stroke();
+				},
+				rectFn:function(e){
+					var x = e.pageX - canvas.offsetLeft;
+					var y = e.pageY - canvas.offsetTop;
+					ctx.clearRect(0,0,canvas.offsetWidth,canvas.offsetHeight);
+					if(huaban.imageData!==null){
+						ctx.putImageData(huaban.imageData,0,0,0,0,canvas.offsetWidth,canvas.offsetHeight)
+					}
+					ctx.beginPath()
+					ctx.lineWidth = huaban.lineWidth;
+					ctx.rect(huaban.beginX,huaban.beginY,x - huaban.beginX,y - huaban.beginY);
+					ctx.strokeStyle = huaban.color;
+					ctx.stroke();
+					ctx.closePath();
+				},
+				circleFn:function(e){
+					var x = e.pageX - canvas.offsetLeft;
+					var y = e.pageY - canvas.offsetTop;
+					ctx.clearRect(0,0,canvas.offsetWidth,canvas.offsetHeight);
+					if(huaban.imageData!==null){
+						ctx.putImageData(huaban.imageData,0,0,0,0,canvas.offsetWidth,canvas.offsetHeight);
+					}
+					ctx.beginPath()
+					ctx.lineWidth = huaban.lineWidth;
+					ctx.arc(huaban.beginX,huaban.beginY,(x - huaban.beginX)/2,0,2*Math.PI);
+					// console.log(x)
+					console.log(x - huaban.beginX)
+					ctx.strokeStyle = huaban.color;
+					ctx.stroke();
+					ctx.closePath();
+				}
+			}
+			//设置canvas宽度高度
+			canvas.setAttribute("width",canvas.offsetWidth);
+			canvas.setAttribute("height",canvas.offsetHeight);
+			//画笔
+			var paintBtn = document.querySelector("#paint");
+			paintBtn.onclick = function(){
+				allBtn.forEach(function(item,i){
+					item.classList.remove("active");
+				})
+				paintBtn.classList.add("active");
+				huaban.type = "paint"
+			}
+			//画矩形
+			rextBtn.onclick = function(){
+				allBtn.forEach(function(item,i){
+					item.classList.remove("active");
+				})
+				rextBtn.classList.add("active");
+				huaban.type = "rect"
+			}
+			//画圆
+			circleBtn.onclick = function(){
+				allBtn.forEach(function(item,i){
+					item.classList.remove("active");
+				})
+				circleBtn.classList.add("active");
+				huaban.type = "circle";
+				}
+			//橡皮擦
+			var eraserBtn = document.querySelector("#eraser");
+			eraserBtn.onclick = function(){
+				allBtn.forEach(function(item,i){
+					item.classList.remove("active");
+				})
+				eraserBtn.classList.add("active");
+				huaban.type = "eraser";
+			}
+			//设置粗细的按钮
+			var lineDiv = document.querySelectorAll(".line")
+			lineDiv.forEach(function(item,i){
+				item.onclick = function(){
+					lineDiv.forEach(function(a,b){
+						a.classList.remove("active");
+					})
+					item.classList.add("active");
+					if(i==0){
+						huaban.lineWidth = 6;
+					}else if(i==1){
+						huaban.lineWidth = 16;
+					}else{
+						huaban.lineWidth = 32;
+					}
+				}
+			})
+			//下载
+			var downloadDom = document.querySelector(".download");
+			downloadDom.onclick = function(){
+				var url = canvas.toDataURL();
+				console.log(url);
+				// var img = new Image();
+				// img.src = url;
+				var aDom = document.querySelector(".download2 a");
+				aDom.setAttribute("href",url);
+				aDom.click();
+			}
+			
+			//监听鼠标按下事件
+			canvas.onmousedown = function(e){
+				huaban.isDraw = true;
+				if(huaban.type == "rect"){
+					var x = e.pageX - canvas.offsetLeft;
+					var y = e.pageY - canvas.offsetTop;
+					huaban.beginX = x;
+					huaban.beginY = y;
+				}
+				if(huaban.type == "circle"){
+					var x = e.pageX - canvas.offsetLeft;
+					var y = e.pageY - canvas.offsetTop;
+					huaban.beginX = x;
+					huaban.beginY = y;
+					
+				}
+				if(huaban.type == "paint"){
+					var x = e.pageX - canvas.offsetLeft;
+					var y = e.pageY - canvas.offsetTop;
+					huaban.beginX = x;
+					huaban.beginY = y;
+					ctx.beginPath();
+					ctx.moveTo(x,y);
+				}
+				if(huaban.type == "eraser"){
+					var x = e.pageX - canvas.offsetLeft;
+					var y = e.pageY - canvas.offsetTop;
+					huaban.beginX = x;
+					huaban.beginY = y;
+					ctx.beginPath();
+					ctx.moveTo(x,y);
+				}
+			}
+			//监听鼠标抬起事件
+			canvas.onmouseup = function(){
+				huaban.imageData = ctx.getImageData(0,0,canvas.offsetWidth,canvas.offsetHeight);
+				huaban.isDraw = false;
+				if(huaban.type=="paint"){
+					ctx.closePath();
+				}
+				if(huaban.type=="eraser"){
+					ctx.closePath();
+				}
+				
+			}
+			canvas.onmousemove = function(e){
+				if(huaban.isDraw){
+					huaban[huaban.type+'Fn'](e)
+				}
+			}
+			//监听颜色事件改编
+			var colorInput = document.querySelector("#color");
+			colorInput.onchange = function(){
+				// console.log(colorInput.value)
+				huaban.color = colorInput.value;
+			}
+		</script>
+	</body>
+</html>
